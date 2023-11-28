@@ -42,10 +42,10 @@ class MyPanel extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_DOWN -> y++;
-            case KeyEvent.VK_UP -> y--;
-            case KeyEvent.VK_RIGHT -> x++;
-            case KeyEvent.VK_LEFT -> x--;
+            case KeyEvent.VK_S -> y++;
+            case KeyEvent.VK_W -> y--;
+            case KeyEvent.VK_D -> x++;
+            case KeyEvent.VK_A -> x--;
         }
 
         // 重绘
