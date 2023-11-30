@@ -9,10 +9,11 @@ public class Tank {
     private int x;
     private int y;
     private int direction;// 上 0，右 1，下 2， 左 3
-    private int speed;
-
+    private int speed = 2;
+    private boolean isAlive = true;
     private Shoot shoot = null;
-    private ArrayList<Shoot> Shoots=new ArrayList<>();
+    private ArrayList<Shoot> Shoots = new ArrayList<>();
+
     public Shoot getShoot() {
         return shoot;
     }
@@ -77,6 +78,14 @@ public class Tank {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
     }
 
     public void shooting() {

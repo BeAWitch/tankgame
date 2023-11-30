@@ -8,9 +8,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Vector;
 
-public class MyPanel extends JPanel implements KeyListener,Runnable{
+public class MyPanel extends JPanel implements KeyListener, Runnable {
     // 定义我的坦克
-    Hero hero = null;
+    Hero hero;
     // 敌人坦克
     Vector<EnemyTank> enemyTanks = new Vector<>();
     int enemyTankSize = 3;
@@ -23,10 +23,11 @@ public class MyPanel extends JPanel implements KeyListener,Runnable{
         for (int i = 0; i < enemyTankSize; i++) {
             EnemyTank enemyTank = new EnemyTank(100 * (i + 1), 0);
             enemyTank.setDirection(2);
-            Shoot shoot = new Shoot(enemyTank.getX()+20,enemyTank.getY()+60,2);
+            Shoot shoot = new Shoot(enemyTank.getX() + 20, enemyTank.getY() + 60, 2);
             enemyTank.getShoots().add(shoot);
             new Thread(shoot).start();
             enemyTanks.add(enemyTank);
+            new Thread(enemyTank).start();
         }
     }
 
@@ -38,18 +39,22 @@ public class MyPanel extends JPanel implements KeyListener,Runnable{
         // hero
         drawTank(hero.getX(), hero.getY(), g, hero.getDirection(), 0);
         // 画hero的子弹
-        if(hero.getShoot() != null && hero.getShoot().isAlive()){
-            g.fillOval(hero.getShoot().getX(),hero.getShoot().getY(),2,2);
+        if (hero.getShoot() != null && hero.getShoot().isAlive()) {
+            g.fillOval(hero.getShoot().getX(), hero.getShoot().getY(), 2, 2);
         }
         // 敌方坦克
-        for (int i = 0; i < enemyTankSize; i++) {
-            drawTank(enemyTanks.get(i).getX(), enemyTanks.get(i).getY(), g, enemyTanks.get(i).getDirection(), 1);
-            for(int j=0;j<enemyTanks.get(i).getShoots().size();j++){
-                Shoot shoot = enemyTanks.get(i).getShoots().get(j);
-                if(shoot.isAlive()){
-                    g.fillOval(shoot.getX(),shoot.getY(),2,2);
-                }else{
-                    enemyTanks.get(i).getShoots().remove(shoot);
+        for (EnemyTank enemyTank : enemyTanks) {
+            // 判断是否存活
+            if (!enemyTank.isAlive()) {
+                continue;
+            }
+            drawTank(enemyTank.getX(), enemyTank.getY(), g, enemyTank.getDirection(), 1);
+            for (int j = 0; j < enemyTank.getShoots().size(); j++) {
+                Shoot shoot = enemyTank.getShoots().get(j);
+                if (shoot.isAlive()) {
+                    g.fillOval(shoot.getX(), shoot.getY(), 2, 2);
+                } else {
+                    enemyTank.getShoots().remove(shoot);
                 }
             }
         }
@@ -106,6 +111,30 @@ public class MyPanel extends JPanel implements KeyListener,Runnable{
         }
     }
 
+    public boolean hitTank(Shoot shoot, EnemyTank enemyTank) {
+        switch (enemyTank.getDirection()) {
+            case 0, 2 -> {// 上下
+                if (shoot.getX() > enemyTank.getX() && shoot.getX() < enemyTank.getX() + 40
+                        && shoot.getY() > enemyTank.getY() && shoot.getY() < enemyTank.getY() + 60) {
+                    enemyTank.setAlive(false);
+                    shoot.setAlive(false);
+                    enemyTanks.remove(enemyTank);
+                    return true;
+                }
+            }
+            case 1, 3 -> {// 右左
+                if (shoot.getX() > enemyTank.getX() && shoot.getX() < enemyTank.getX() + 60
+                        && shoot.getY() > enemyTank.getY() && shoot.getY() < enemyTank.getY() + 40) {
+                    enemyTank.setAlive(false);
+                    shoot.setAlive(false);
+                    enemyTanks.remove(enemyTank);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
 
@@ -143,12 +172,21 @@ public class MyPanel extends JPanel implements KeyListener,Runnable{
 
     @Override
     public void run() {
-        while(true){
+        while (true) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+
+            // 判断是否击中了敌人坦克
+            if (hero.getShoot() != null && hero.getShoot().isAlive()) {
+                for (int i = 0; i < enemyTanks.size(); i++) {
+                    if(hitTank(hero.getShoot(), enemyTanks.get(i)))
+                        i--;
+                }
+            }
+
             this.repaint();
         }
     }
