@@ -88,19 +88,4 @@ public class Tank {
         isAlive = alive;
     }
 
-    public void shooting() {
-        // 根据方向创建Shot对象
-        switch (direction) {
-            case 0 ->// 上
-                    shoot = new Shoot(x + 20, y, 0);
-            case 1 ->// 右
-                    shoot = new Shoot(x + 50, y + 30, 1);
-            case 2 ->// 下
-                    shoot = new Shoot(x + 20, y + 60, 2);
-            case 3 ->// 左
-                    shoot = new Shoot(x - 10, y + 30, 3);
-        }
-        // 启动线程
-        new Thread(shoot).start();
-    }
 }

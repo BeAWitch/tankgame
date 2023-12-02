@@ -37,11 +37,19 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
         g.fillRect(0, 0, 1000, 750);
         // 画坦克
         // hero
-        drawTank(hero.getX(), hero.getY(), g, hero.getDirection(), 0);
-        // 画hero的子弹
-        if (hero.getShoot() != null && hero.getShoot().isAlive()) {
-            g.fillOval(hero.getShoot().getX(), hero.getShoot().getY(), 2, 2);
+        if(hero.isAlive()) {
+            drawTank(hero.getX(), hero.getY(), g, hero.getDirection(), 0);
         }
+        // 画hero的子弹
+        for (int i = 0; i < hero.getShoots().size(); i++) {
+            Shoot shoot = hero.getShoots().get(i);
+            if (shoot.isAlive()) {
+                g.fillOval(shoot.getX(), shoot.getY(), 2, 2);
+            } else {
+                hero.getShoots().remove(shoot);
+            }
+        }
+
         // 敌方坦克
         for (EnemyTank enemyTank : enemyTanks) {
             // 判断是否存活
@@ -135,6 +143,28 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
         return false;
     }
 
+    public boolean hitHero(Shoot shoot) {
+        switch (hero.getDirection()) {
+            case 0, 2 -> {// 上下
+                if (shoot.getX() > hero.getX() && shoot.getX() < hero.getX() + 40
+                        && shoot.getY() > hero.getY() && shoot.getY() < hero.getY() + 60) {
+                    hero.setAlive(false);
+                    shoot.setAlive(false);
+                    return true;
+                }
+            }
+            case 1, 3 -> {// 右左
+                if (shoot.getX() > hero.getX() && shoot.getX() < hero.getX() + 60
+                        && shoot.getY() > hero.getY() && shoot.getY() < hero.getY() + 40) {
+                    hero.setAlive(false);
+                    shoot.setAlive(false);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
 
@@ -142,27 +172,39 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_W -> {
-                hero.setDirection(0);
-                hero.moveUp();
+        if(hero.isAlive()){
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_W -> {
+                    hero.setDirection(0);
+                    if (hero.getY() > 0) {
+                        hero.moveUp();
+                    }
+                }
+                case KeyEvent.VK_D -> {
+                    hero.setDirection(1);
+                    if (hero.getX() - 10 + 60 < 1000) {
+                        hero.moveRight();
+                    }
+                }
+                case KeyEvent.VK_S -> {
+                    hero.setDirection(2);
+                    if (hero.getY() + 60 < 750) {
+                        hero.moveDown();
+                    }
+                }
+                case KeyEvent.VK_A -> {
+                    hero.setDirection(3);
+                    if (hero.getX() - 10 > 0) {
+                        hero.moveLeft();
+                    }
+                }
+                case KeyEvent.VK_J -> {
+                    hero.shooting();
+                }
             }
-            case KeyEvent.VK_D -> {
-                hero.setDirection(1);
-                hero.moveRight();
-            }
-            case KeyEvent.VK_S -> {
-                hero.setDirection(2);
-                hero.moveDown();
-            }
-            case KeyEvent.VK_A -> {
-                hero.setDirection(3);
-                hero.moveLeft();
-            }
-            case KeyEvent.VK_J -> hero.shooting();
-        }
 
-        this.repaint();
+            this.repaint();
+        }
     }
 
     @Override
@@ -180,10 +222,18 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
             }
 
             // 判断是否击中了敌人坦克
-            if (hero.getShoot() != null && hero.getShoot().isAlive()) {
-                for (int i = 0; i < enemyTanks.size(); i++) {
-                    if(hitTank(hero.getShoot(), enemyTanks.get(i)))
-                        i--;
+            for (int i = 0; i < hero.getShoots().size(); i++) {
+                for (int j = 0; j < enemyTanks.size(); j++) {
+                    if (hitTank(hero.getShoots().get(i), enemyTanks.get(j)))
+                        j--;
+                }
+            }
+
+            // 判断是否击中了 hero
+            for (int i = 0; hero.isAlive() && i < enemyTanks.size(); i++) {
+                for (int j = 0; j < enemyTanks.get(i).getShoots().size(); j++) {
+                    if (hitHero(enemyTanks.get(i).getShoots().get(j)))
+                        break;
                 }
             }
 
