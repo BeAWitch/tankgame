@@ -13,7 +13,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     Hero hero;
     // 敌人坦克
     Vector<EnemyTank> enemyTanks = new Vector<>();
-    int enemyTankSize = 3;
+    int enemyTankSize = 6;
 
     public MyPanel() {
         // 初始化自己的坦克
@@ -22,6 +22,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
         // 初始化敌人坦克
         for (int i = 0; i < enemyTankSize; i++) {
             EnemyTank enemyTank = new EnemyTank(100 * (i + 1), 0);
+            enemyTank.setEnemyTanks(enemyTanks);
             enemyTank.setDirection(2);
             Shoot shoot = new Shoot(enemyTank.getX() + 20, enemyTank.getY() + 60, 2);
             enemyTank.getShoots().add(shoot);
@@ -37,7 +38,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
         g.fillRect(0, 0, 1000, 750);
         // 画坦克
         // hero
-        if(hero.isAlive()) {
+        if (hero.isAlive()) {
             drawTank(hero.getX(), hero.getY(), g, hero.getDirection(), 0);
         }
         // 画hero的子弹
@@ -66,7 +67,22 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
                 }
             }
         }
+        // 玩家成绩
+        showInfo(g);
     }
+
+    public void showInfo(Graphics g) {
+        // 绘制玩家的成绩
+        g.setColor(Color.black);
+        Font font = new Font("宋体", Font.BOLD, 25);
+        g.setFont(font);
+
+        g.drawString("累计击毁敌方坦克：", 1020, 30);
+        drawTank(1020, 60, g, 0, 1);
+        g.setColor(Color.black);
+        g.drawString("X " + Recorder.getEnemyTankNum(), 1080, 100);
+    }
+
     // 绘制坦克
 
     /**
@@ -127,6 +143,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
                     enemyTank.setAlive(false);
                     shoot.setAlive(false);
                     enemyTanks.remove(enemyTank);
+                    Recorder.addEnemyTankNum();
                     return true;
                 }
             }
@@ -136,6 +153,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
                     enemyTank.setAlive(false);
                     shoot.setAlive(false);
                     enemyTanks.remove(enemyTank);
+                    Recorder.addEnemyTankNum();
                     return true;
                 }
             }
@@ -172,7 +190,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if(hero.isAlive()){
+        if (hero.isAlive()) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_W -> {
                     hero.setDirection(0);

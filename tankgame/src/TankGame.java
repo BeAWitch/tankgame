@@ -1,4 +1,7 @@
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 
 public class TankGame extends JFrame {
     MyPanel mp = null;
@@ -16,5 +19,14 @@ public class TankGame extends JFrame {
         this.addKeyListener(mp);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
+
+        // 关闭窗口的时事件
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                Recorder.storeRecord(mp.enemyTanks);
+            }
+        });
     }
 }
